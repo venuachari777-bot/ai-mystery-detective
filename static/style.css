@@ -1,0 +1,495 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* 📺 Retro CRT Scanline Overlay */
+body::before {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03));
+    z-index: 999;
+    background-size: 100% 3px, 6px 100%;
+    pointer-events: none;
+    opacity: 0.55;
+}
+
+body {
+    background-color: #0d1117;
+    color: #e6edf3;
+    font-family: 'VT323', monospace, sans-serif;
+    font-size: 20px;
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #30363d;
+    padding-bottom: 12px;
+}
+
+.header h1 {
+    font-size: 46px;
+    color: #f0883e;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(240, 136, 62, 0.6), 0 0 20px rgba(240, 136, 62, 0.3);
+}
+
+.subtitle {
+    color: #8b949e;
+    font-size: 22px;
+}
+
+.game-container {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 20px;
+    max-width: 1250px;
+    margin: 0 auto;
+}
+
+.panel {
+    background-color: #161b22;
+    border: 2px solid #30363d;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+
+.panel h2 {
+    color: #58a6ff;
+    font-size: 28px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #30363d;
+    padding-bottom: 6px;
+    text-shadow: 0 0 8px rgba(88, 166, 255, 0.4);
+}
+
+.story-text {
+    background: #0d1117;
+    padding: 12px;
+    border-left: 4px solid #f0883e;
+    margin-bottom: 18px;
+    font-size: 20px;
+    line-height: 1.4;
+}
+
+/* 🔦 UV Flashlight Mode Styles */
+.uv-btn {
+    background: #21262d;
+    color: #d2a8ff;
+    border: 1px solid #bc8cff;
+    padding: 4px 12px;
+    font-family: inherit;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+
+.uv-btn:hover {
+    background: #bc8cff;
+    color: #000;
+}
+
+.uv-search-box {
+    position: relative;
+    height: 110px;
+    background: #090d13;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 10px 0;
+    cursor: crosshair;
+}
+
+.uv-mode-active {
+    background: #020308 !important;
+    border-color: #bc8cff !important;
+    box-shadow: inset 0 0 20px rgba(188, 140, 255, 0.2);
+}
+
+.uv-spotlight {
+    display: none;
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(188, 140, 255, 0.35) 0%, rgba(138, 43, 226, 0.15) 50%, rgba(0,0,0,0) 75%);
+    transform: translate(-50%, -50%);
+    z-index: 5;
+}
+
+.clue-list-interactive {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+}
+
+.hidden-clue-item {
+    background: #161b22;
+    border: 1px solid #388bfd;
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.hidden-clue-item:hover {
+    transform: scale(1.05);
+    background: #1f6feb;
+}
+
+.uv-mode-active .hidden-clue-item {
+    background: transparent;
+    border: 1px dashed rgba(188, 140, 255, 0.2);
+}
+
+.uv-mode-active .hidden-clue-item .uv-glow-text {
+    opacity: 0.15;
+    transition: opacity 0.2s, text-shadow 0.2s;
+}
+
+.uv-mode-active .hidden-clue-item.revealed .uv-glow-text {
+    opacity: 1 !important;
+    color: #e2c5ff !important;
+    text-shadow: 0 0 10px #bc8cff, 0 0 20px #8a2be2;
+}
+
+.inventory-area {
+    margin-top: 15px;
+    background: #0d1117;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px dashed #30363d;
+}
+
+.inventory-area ul {
+    list-style: none;
+    margin-top: 8px;
+}
+
+.inventory-area li {
+    padding: 6px 4px;
+    border-bottom: 1px dashed #30363d;
+    color: #7ee787;
+    font-size: 19px;
+}
+
+/* Suspect Case Board Grid */
+.suspect-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.suspect-card {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.suspect-card:hover {
+    transform: translateY(-4px);
+    border-color: #f0883e;
+    box-shadow: 0 4px 12px rgba(240, 136, 62, 0.3);
+}
+
+.avatar-icon {
+    font-size: 28px;
+    margin-bottom: 4px;
+}
+
+.suspect-card h4 {
+    font-size: 17px;
+    color: #58a6ff;
+    margin-bottom: 3px;
+}
+
+.role-tag {
+    font-size: 14px;
+    color: #8b949e;
+    margin-bottom: 3px;
+}
+
+.trait-tag {
+    font-size: 13px;
+    color: #7ee787;
+    font-style: italic;
+}
+
+.tension-bar-container {
+    width: 100%;
+    background: #21262d;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #30363d;
+}
+
+.tension-fill {
+    height: 100%;
+    width: 15%;
+    background: linear-gradient(90deg, #7ee787, #f0883e, #da3633);
+    transition: width 0.5s ease;
+}
+
+/* 📈 Polygraph Heartbeat Section */
+.polygraph-container {
+    background: #05080c;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin: 12px 0;
+}
+
+.polygraph-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    color: #8b949e;
+    margin-bottom: 4px;
+}
+
+#polygraphCanvas {
+    width: 100%;
+    height: 60px;
+    background: #020406;
+    display: block;
+    border-radius: 4px;
+}
+
+/* Interrogation Chat */
+.suspect-selector {
+    margin-bottom: 10px;
+}
+
+.suspect-selector label {
+    font-size: 20px;
+    margin-right: 8px;
+}
+
+.suspect-selector select {
+    background: #0d1117;
+    color: #fff;
+    border: 1px solid #30363d;
+    padding: 6px 10px;
+    font-family: inherit;
+    font-size: 18px;
+    border-radius: 4px;
+}
+
+.chat-box {
+    background: #0d1117;
+    height: 240px;
+    overflow-y: auto;
+    border: 1px solid #30363d;
+    padding: 12px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message {
+    padding: 8px 12px;
+    border-radius: 6px;
+    max-width: 85%;
+    font-size: 19px;
+    line-height: 1.3;
+}
+
+.message.system {
+    color: #8b949e;
+    font-style: italic;
+    align-self: center;
+    text-align: center;
+}
+
+.message.player {
+    background: #1f6feb;
+    color: white;
+    align-self: flex-end;
+}
+
+.message.suspect {
+    background: #238636;
+    color: white;
+    align-self: flex-start;
+}
+
+.typing-cursor::after {
+    content: "▋";
+    animation: blink 0.8s infinite;
+    color: #7ee787;
+    margin-left: 4px;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.chat-input-area input {
+    flex: 1;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: #fff;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 19px;
+    border-radius: 4px;
+}
+
+.chat-input-area button {
+    background: #238636;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    font-family: inherit;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.accuse-box {
+    margin-top: 14px;
+    border-top: 2px dashed #da3633;
+    padding-top: 10px;
+    text-align: center;
+}
+
+.accuse-btn {
+    margin-top: 8px;
+    background: #da3633;
+    color: white;
+    padding: 10px 24px;
+    border: none;
+    font-family: inherit;
+    font-size: 21px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.accuse-btn:hover {
+    background: #f85149;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #161b22;
+    padding: 26px;
+    border: 2px solid #58a6ff;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 520px;
+    transition: all 0.3s ease;
+}
+
+.modal-content h2 {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.modal-content p {
+    font-size: 19px;
+    line-height: 1.4;
+    color: #e6edf3;
+}
+
+.modal-content button {
+    margin-top: 18px;
+    padding: 8px 20px;
+    font-family: inherit;
+    font-size: 19px;
+    cursor: pointer;
+    background: #238636;
+    color: white;
+    border: none;
+    border-radius: 6px;
+}
+
+/* ==========================================
+   ✨ THE 4 KEYFRAME ANIMATIONS
+   ========================================== */
+
+/* 1. 💥 Screen Shake on Wrong Accusation */
+.screen-shake {
+    animation: screenShake 0.45s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes screenShake {
+    10%, 90% { transform: translate3d(-3px, 0, 0); }
+    20%, 80% { transform: translate3d(5px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-7px, 0, 0); }
+    40%, 60% { transform: translate3d(7px, 0, 0); }
+}
+
+/* 2. 😰 Suspect Panic Shiver (Stress > 65%) */
+.suspect-panic {
+    animation: panicJitter 0.16s infinite linear alternate !important;
+    border-color: #da3633 !important;
+    box-shadow: 0 0 18px rgba(218, 54, 51, 0.6) !important;
+}
+
+@keyframes panicJitter {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    50% { transform: translate(-1.5px, -1px) rotate(-0.8deg); }
+    100% { transform: translate(1.5px, -1px) rotate(0.8deg); }
+}
+
+/* 3. ✨ Clue Discovery Pulse Animation */
+.clue-collected-anim {
+    animation: cluePulse 0.5s ease-out;
+}
+
+@keyframes cluePulse {
+    0% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.15); filter: brightness(1.8); box-shadow: 0 0 22px #7ee787; }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* 4. 🏆 Victory Modal Gold Glow Pulse */
+.modal-victory {
+    border-color: #f0883e !important;
+    animation: victoryGlow 1.6s infinite alternate ease-in-out;
+}
+
+@keyframes victoryGlow {
+    from {
+        box-shadow: 0 0 15px rgba(240, 136, 62, 0.4), inset 0 0 10px rgba(240, 136, 62, 0.2);
+    }
+    to {
+        box-shadow: 0 0 40px rgba(240, 136, 62, 0.85), inset 0 0 20px rgba(240, 136, 62, 0.45);
+    }
+}

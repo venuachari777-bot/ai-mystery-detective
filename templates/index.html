@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mystery Detective</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <h1>🕵️ AI MYSTERY DETECTIVE</h1>
+        <p class="subtitle">{{ level.title }}</p>
+        
+        <!-- Live Database Stats Header -->
+        <div style="margin-top: 12px; display: flex; justify-content: center; gap: 20px; align-items: center; font-size: 22px;">
+            <span style="color: #7ee787;">⭐ Score: <strong>{{ stats.score }}</strong> PTS</span>
+            <span style="color: #58a6ff;">🏆 Solved: <strong>{{ stats.cases_solved }}</strong> Cases</span>
+            <span style="color: #f0883e;">📍 Level: <strong>{{ level_num }}</strong>/3</span>
+            <button onclick="resetGame()" style="background: #21262d; color: #8b949e; border: 1px solid #30363d; padding: 4px 10px; font-family: inherit; font-size: 16px; cursor: pointer; border-radius: 4px;">Reset Progress</button>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <!-- Left Column: Crime Scene & Case Board -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Crime Scene Section with UV Light Mode -->
+            <section class="panel crime-scene-panel">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Crime Scene Investigation</h2>
+                    <button id="uv-toggle-btn" onclick="toggleUVMode()" class="uv-btn">🔦 Toggle UV Mode</button>
+                </div>
+                <p class="story-text">{{ level.story }}</p>
+                
+                <div class="clues-area">
+                    <h3>Crime Scene Evidence Search:</h3>
+                    <!-- Interactive UV Search Area -->
+                    <div id="uv-canvas-container" class="uv-search-box">
+                        <div class="uv-spotlight" id="uv-light"></div>
+                        <div class="clue-list-interactive">
+                            {% for clue in level.clues %}
+                            <div class="hidden-clue-item" id="clue-box-{{ clue.id }}" onclick="collectClue('{{ clue.id }}')">
+                                <span class="uv-glow-text">🔍 {{ clue.name }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inventory-area">
+                    <h3>Collected Clues Inventory (<span id="clue-count">0</span>/3):</h3>
+                    <ul id="inventory-list"></ul>
+                </div>
+            </section>
+
+            <!-- Suspect Case Board Section -->
+            <section class="panel caseboard-panel">
+                <h2>Case Board: Suspects</h2>
+                <p style="font-size: 16px; color: #8b949e; margin-bottom: 10px;">Click any card to select for interrogation:</p>
+                <div class="suspect-grid">
+                    {% for id, suspect in level.suspects.items() %}
+                    <div class="suspect-card" id="card-{{ id }}" onclick="selectSuspectFromBoard('{{ id }}')">
+                        <div class="avatar-icon">👤</div>
+                        <h4>{{ suspect.name }}</h4>
+                        <p class="role-tag">{{ suspect.role }}</p>
+                        <p class="trait-tag">{{ suspect.personality[:35] }}...</p>
+                        <div class="tension-bar-container" style="height: 6px; margin-top: 8px;">
+                            <div class="tension-fill" id="card-stress-{{ id }}" style="width: 15%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <!-- Right Column: Interrogation Section & Polygraph Lie Detector -->
+        <section class="panel interrogation-panel">
+            <h2>Interrogation Room</h2>
+            <div class="suspect-selector">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <label for="suspect-select">Select Suspect:</label>
+                        <select id="suspect-select" onchange="onSuspectChange()">
+                            {% for id, suspect in level.suspects.items() %}
+                            <option value="{{ id }}">{{ suspect.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div id="stress-badge" style="font-size: 19px; color: #7ee787;">
+                        Stress: <strong id="stress-percent">15%</strong> (<span id="stress-status">Calm</span>)
+                    </div>
+                </div>
+
+                <div class="tension-bar-container" style="height: 12px; margin-top: 10px;">
+                    <div class="tension-fill" id="main-stress-bar" style="width: 15%;"></div>
+                </div>
+            </div>
+
+            <!-- 📈 Polygraph Heartbeat Lie Detector Canvas -->
+            <div class="polygraph-container">
+                <div class="polygraph-header">
+                    <span>⚡ POLYGRAPH OSCILLOSCOPE (HEART RATE)</span>
+                    <span id="polygraph-status" style="color: #7ee787;">STABLE: 68 BPM</span>
+                </div>
+                <canvas id="polygraphCanvas" width="480" height="70"></canvas>
+            </div>
+
+            <div class="chat-box" id="chat-box">
+                <div class="message system">Select a suspect from the list or board and question them.</div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="player-question" placeholder="Ask your question here..." onkeypress="handleKeyPress(event)">
+                <button onclick="askQuestion()">Ask</button>
+            </div>
+
+            <!-- Accuse Section -->
+            <div class="accuse-box">
+                <h3>Make Your Decision</h3>
+                <p>Accuse only when you are certain of the culprit!</p>
+                <button class="accuse-btn" onclick="accuseSuspect()">Accuse Selected Suspect</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="result-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title"></h2>
+            <p id="modal-message"></p>
+            <button onclick="location.reload()">Continue</button>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+    <script>
+        async function resetGame() {
+            if (confirm("Are you sure you want to reset your score and progress?")) {
+                await fetch('/api/restart', { method: 'POST' });
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
